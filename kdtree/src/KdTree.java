@@ -12,18 +12,16 @@ public class KdTree {
         private Node left;
         private Node right;
 
-        private Node(boolean dim, Point2D p, Node left, Node right) {
+        private Node(boolean dim, Point2D p) {
             this.dim = dim;
             this.p = p;
-            this.left = left;
-            this.right = right;
         }
 
-        public static Node node(Point2D p, Node parent, Node left, Node right) {
-            return new Node(!parent.dim, p, left, right);
+        public static Node node(Point2D p, Node parent) {
+            return new Node(!parent.dim, p);
         }
-        public static Node xNode(Point2D p, Node left, Node right) {
-            return new Node(X_DIM, p, left, right);
+        public static Node xNode(Point2D p) {
+            return new Node(X_DIM, p);
         }
 
         public boolean isXdim() {
@@ -34,27 +32,18 @@ public class KdTree {
             return dim == Y_DIM;
         }
 
-        public Point2D getP() {
-            return p;
-        }
-
-        public int insert(Point2D o) {
+        public void insert(Point2D o) {
             if (isLeft(o)) {
                 if (left == null) {
-                    left = Node.node(o, this, null, null);
-                    return 1;
+                    left = Node.node(o, this);
                 } else {
-                    return left.insert(o);
+                    left.insert(o);
                 }
             } else {
                 if (right == null) {
-                    if (o.x() == p.x()) {
-                        return 0;
-                    }
-                    right = Node.node(o, this, null, null);
-                    return 1;
+                    right = Node.node(o, this);
                 } else {
-                    return right.insert(o);
+                    right.insert(o);
                 }
             }
         }
@@ -62,66 +51,89 @@ public class KdTree {
         public boolean contains(Point2D o) {
             if (this.p.equals(o)) {
                 return true;
-            } else if (isLeft(o) && left != null) {
-                return left.contains(o);
-            } else if (right != null) {
-                return right.contains(o);
+            } else if (isLeft(o)) {
+                return left != null && left.contains(o);
+            } else {
+                return right != null && right.contains(o);
             }
-            return false;
         }
 
         private boolean isLeft(Point2D o) {
-            return isXdim() && o.x() < p.x()
-                    || isYdim() && o.y() < p.y();
+            return (isXdim() && o.x() < p.x())
+                    || (isYdim() && o.y() < p.y());
         }
 
-        public void draw() {
+        private void draw(double xMin, double xMax, double yMin, double yMax) {
+            StdDraw.setPenRadius(0.002);
             if (isXdim()) {
-                StdDraw.line(p.x(), 0, p.x(), 1.0);
+                StdDraw.setPenColor(StdDraw.RED);
+                StdDraw.line(p.x(), yMin, p.x(), yMax);
             } else {
-                StdDraw.line(0, p.y(), 1.0, p.y());
+                StdDraw.setPenColor(StdDraw.BLUE);
+                StdDraw.line(xMin, p.y(), xMax, p.y());
             }
+            StdDraw.setPenRadius(.01);
+            StdDraw.setPenColor(StdDraw.BLACK);
             StdDraw.point(p.x(), p.y());
             if (left != null) {
-                left.draw();
+                if (isXdim()) {
+                    left.draw(xMin, p.x(), yMin, yMax);
+                } else {
+                    left.draw(xMin, xMax, yMin, p.y());
+                }
             }
             if (right != null) {
-                right.draw();
+                if (isXdim()) {
+                    right.draw(p.x(), xMax, yMin, yMax);
+                } else {
+                    right.draw(xMin, xMax, p.y(), yMax);
+                }
             }
         }
 
-        public void range(Set<Point2D> acc, RectHV rect) {
+        public void range(Set<Point2D> acc, RectHV rect,
+                double xMin, double xMax, double yMin, double yMax) {
             // add point
             if (rect.contains(p)) {
                 acc.add(p);
             }
 
-            RectHV[] halfRecs = halfRects();
+            RectHV[] halfRecs = halfRects(xMin, xMax, yMin, yMax);
             RectHV minorRect = halfRecs[0];
             RectHV majorRect = halfRecs[1];
 
             // prune
             if (left != null && rect.intersects(minorRect)) {
-                left.range(acc, rect);
+                left.range(acc, rect,
+                        minorRect.xmin(), minorRect.xmax(),
+                        minorRect.ymin(), minorRect.ymax());
             }
             if (right != null && rect.intersects(majorRect)) {
-                right.range(acc, rect);
+                right.range(acc, rect,
+                        majorRect.xmin(), majorRect.xmax(),
+                        majorRect.ymin(), majorRect.ymax());
             }
         }
 
-        private RectHV[] halfRects() {
+        private RectHV[] halfRects(double xMin, double xMax,
+                double yMin, double yMax) {
+            if (p.x() < xMin || p.x() > xMax
+                    || p.y() < yMin || p.y() > yMax) {
+                throw new IllegalArgumentException("Bad data");
+            }
             if (isXdim()) {
                 return new RectHV[] {
-                        new RectHV(0,     0, p.x(), 1.0),
-                        new RectHV(p.x(), 0, 1.0,   1.0)};
+                        new RectHV(xMin,  yMin, p.x(), yMax),
+                        new RectHV(p.x(), yMin, xMax,  yMax)};
             } else {
                 return new RectHV[] {
-                        new RectHV(0, 0,     1.0, p.y()),
-                        new RectHV(0, p.y(), 1.0, 1.0)};
+                        new RectHV(xMin, yMin,  xMax, p.y()),
+                        new RectHV(xMin, p.y(), xMax, yMax)};
             }
         }
 
-        public Point2D nearest(Point2D closest, Point2D queryP) {
+        public Point2D nearest(Point2D closest, Point2D queryP,
+                double xMin, double xMax, double yMin, double yMax) {
             Point2D closestSoFar = closest;
             if (closestSoFar == null
                     || p.distanceSquaredTo(queryP)
@@ -129,17 +141,38 @@ public class KdTree {
                 closestSoFar = p;
             }
 
-            RectHV[] halfRecs = halfRects();
+            RectHV[] halfRecs = halfRects(xMin, xMax, yMin, yMax);
             RectHV minorRect = halfRecs[0];
             RectHV majorRect = halfRecs[1];
 
+            if (minorRect.contains(queryP)) {
+                closestSoFar = exploreLeft(minorRect, closestSoFar, queryP);
+                closestSoFar = exploreRight(majorRect, closestSoFar, queryP);
+            } else {
+                closestSoFar = exploreRight(majorRect, closestSoFar, queryP);
+                closestSoFar = exploreLeft(minorRect, closestSoFar, queryP);
+            }
+            return closestSoFar;
+        }
+
+        private Point2D exploreLeft(RectHV minorRect,
+                Point2D closestSoFar, Point2D queryP) {
             if (left != null && minorRect.distanceSquaredTo(queryP)
                     < closestSoFar.distanceSquaredTo(queryP)) {
-                closestSoFar = left.nearest(closestSoFar, queryP);
+                return left.nearest(closestSoFar, queryP,
+                        minorRect.xmin(), minorRect.xmax(),
+                        minorRect.ymin(), minorRect.ymax());
             }
+            return closestSoFar;
+        }
+
+        private Point2D exploreRight(RectHV majorRect,
+                Point2D closestSoFar, Point2D queryP) {
             if (right != null && majorRect.distanceSquaredTo(queryP)
                     < closestSoFar.distanceSquaredTo(queryP)) {
-                closestSoFar = right.nearest(closestSoFar, queryP);
+                return right.nearest(closestSoFar, queryP,
+                        majorRect.xmin(), majorRect.xmax(),
+                        majorRect.ymin(), majorRect.ymax());
             }
             return closestSoFar;
         }
@@ -161,12 +194,14 @@ public class KdTree {
 
     public void insert(Point2D p) {
         if (p == null) throw new NullPointerException("Null argument");
+        if (contains(p)) return;
+
         if (root == null) {
-            root = Node.xNode(p, null, null);
-            size++;
+            root = Node.xNode(p);
         } else {
-            size += root.insert(p);
+            root.insert(p);
         }
+        size++;
     }
 
     public boolean contains(Point2D p) {
@@ -176,7 +211,7 @@ public class KdTree {
 
     public void draw() {
         if (root != null) {
-            root.draw();
+            root.draw(0, 1.0, 0.0, 1.0);
         }
     }
 
@@ -184,7 +219,7 @@ public class KdTree {
         if (rect == null) throw new NullPointerException("Null argument");
         Set<Point2D> points = new HashSet<Point2D>();
         if (root != null) {
-            root.range(points, rect);
+            root.range(points, rect, 0, 1.0, 0, 1.0);
         }
         return points;
     }
@@ -192,12 +227,26 @@ public class KdTree {
     public Point2D nearest(Point2D p) {
         if (p == null) throw new NullPointerException("Null argument");
         if (root != null) {
-            return root.nearest(null, p);
+            return root.nearest(null, p, 0, 1.0, 0, 1.0);
         }
         return null;
     }
 
     public static void main(String[] args) {
+        String filename = args[0];
+        In in = new In(filename);
+
+        // initialize the data structures with N points from standard input
+        KdTree kdtree = new KdTree();
+        while (!in.isEmpty()) {
+            double x = in.readDouble();
+            double y = in.readDouble();
+            Point2D p = new Point2D(x, y);
+            kdtree.insert(p);
+        }
+
+        kdtree.draw();
+        StdDraw.show(0);
 
     }
 }
