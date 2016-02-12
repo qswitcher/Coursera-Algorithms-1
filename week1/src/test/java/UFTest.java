@@ -24,7 +24,7 @@ public class UFTest {
     @Test
     public void weightedQU() {
         WeightedQuickUnionUF qf = new WeightedQuickUnionUF(10);
-        String ops = "2-8 6-4 4-1 0-7 4-9 9-5 8-0 4-3 3-8";
+        String ops = "2-1 5-9 8-4 8-2 7-8 6-3 6-9 6-7 7-0";
         for (String union : ops.split(" ")) {
             String[] args = union.split("-");
             qf.union(Integer.valueOf(args[0]), Integer.valueOf(args[1]));

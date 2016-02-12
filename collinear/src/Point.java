@@ -1,21 +1,8 @@
 import java.util.Comparator;
 
+import edu.princeton.cs.algs4.StdDraw;
+
 public class Point implements Comparable<Point> {
-    // compare points by slope
-    public final Comparator<Point> SLOPE_ORDER = new Comparator<Point>() {
-        @Override
-        public int compare(Point p1, Point p2) {
-            if (p1 == null || p2 == null) {
-                throw new NullPointerException("Null argument!");
-            }
-
-            Point p0 = Point.this;
-
-            double p1Slope = p0.slopeTo(p1);
-            double p2Slope = p0.slopeTo(p2);
-            return Double.compare(p1Slope, p2Slope);
-        }
-    };
 
     private final int x;                              // x coordinate
     private final int y;                              // y coordinate
@@ -78,5 +65,24 @@ public class Point implements Comparable<Point> {
             return 0;
         }
         return ((double) (that.y - this.y))/((double) (that.x - this.x));
+    }
+
+    // compare points by slope
+    public Comparator<Point> slopeOrder() {
+        return new Comparator<Point>() {
+
+            @Override
+            public int compare(Point p1, Point p2) {
+                if (p1 == null || p2 == null) {
+                    throw new NullPointerException("Null argument!");
+                }
+
+                Point p0 = Point.this;
+
+                double p1Slope = p0.slopeTo(p1);
+                double p2Slope = p0.slopeTo(p2);
+                return Double.compare(p1Slope, p2Slope);
+            }
+        };
     }
 }

@@ -1,3 +1,5 @@
+import edu.princeton.cs.algs4.In;
+
 /*************************************************************************
  *  Compilation:  javac PuzzleChecker.java
  *  Execution:    java PuzzleChecker filename1.txt filename2.txt ...

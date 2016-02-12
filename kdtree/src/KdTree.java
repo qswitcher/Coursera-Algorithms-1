@@ -1,5 +1,5 @@
-import java.util.HashSet;
 import java.util.Set;
+import java.util.TreeSet;
 
 public class KdTree {
 
@@ -117,18 +117,20 @@ public class KdTree {
 
         private RectHV[] halfRects(double xMin, double xMax,
                 double yMin, double yMax) {
-            if (p.x() < xMin || p.x() > xMax
-                    || p.y() < yMin || p.y() > yMax) {
+            double pX = p.x();
+            double pY = p.y();
+            if (pX < xMin || pX > xMax
+                    || pY < yMin || pY > yMax) {
                 throw new IllegalArgumentException("Bad data");
             }
             if (isXdim()) {
                 return new RectHV[] {
-                        new RectHV(xMin,  yMin, p.x(), yMax),
-                        new RectHV(p.x(), yMin, xMax,  yMax)};
+                        new RectHV(xMin,  yMin, pX, yMax),
+                        new RectHV(pX, yMin, xMax,  yMax)};
             } else {
                 return new RectHV[] {
-                        new RectHV(xMin, yMin,  xMax, p.y()),
-                        new RectHV(xMin, p.y(), xMax, yMax)};
+                        new RectHV(xMin, yMin,  xMax, pY),
+                        new RectHV(xMin, pY, xMax, yMax)};
             }
         }
 
@@ -217,7 +219,7 @@ public class KdTree {
 
     public Iterable<Point2D> range(RectHV rect) {
         if (rect == null) throw new NullPointerException("Null argument");
-        Set<Point2D> points = new HashSet<Point2D>();
+        Set<Point2D> points = new TreeSet<Point2D>();
         if (root != null) {
             root.range(points, rect, 0, 1.0, 0, 1.0);
         }
