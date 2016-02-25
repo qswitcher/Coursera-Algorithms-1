@@ -2,6 +2,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeSet;
 
+import edu.princeton.cs.algs4.Point2D;
+import edu.princeton.cs.algs4.RectHV;
+import edu.princeton.cs.algs4.StdDraw;
+
 public class PointSET {
 
     private TreeSet<Point2D> set;

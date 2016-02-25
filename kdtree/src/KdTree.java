@@ -1,6 +1,11 @@
 import java.util.Set;
 import java.util.TreeSet;
 
+import edu.princeton.cs.algs4.In;
+import edu.princeton.cs.algs4.Point2D;
+import edu.princeton.cs.algs4.RectHV;
+import edu.princeton.cs.algs4.StdDraw;
+
 public class KdTree {
 
     private static class Node {
@@ -251,4 +256,5 @@ public class KdTree {
         StdDraw.show(0);
 
     }
+
 }

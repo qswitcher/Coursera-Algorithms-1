@@ -38,13 +38,17 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
     }
 
     public Item dequeue() {
+        return dequeue(true);
+    }
+
+    private Item dequeue(boolean resizeAsNeeded) {
         if (isEmpty()) throw new NoSuchElementException();
         int p = StdRandom.uniform(0, size);
         Item value = list[p];
         list[p] = list[size - 1];
         list[size - 1] = null;
         size--;
-        if (size == capacity/2) {
+        if (size == capacity/4 && resizeAsNeeded) {
             resize(capacity/2);
         }
         return value;
@@ -88,7 +92,8 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
         @Override
         public Item next() {
             if (queue.isEmpty()) throw new NoSuchElementException();
-            return queue.dequeue();
+            // don't resize as we go down since the iterator is 1-way
+            return queue.dequeue(false);
         }
 
         @Override

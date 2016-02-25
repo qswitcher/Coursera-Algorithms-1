@@ -1,6 +1,11 @@
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import edu.princeton.cs.algs4.Point2D;
+import edu.princeton.cs.algs4.StdRandom;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 public class KdTreeTest {
 
@@ -173,5 +178,27 @@ public class KdTreeTest {
         tree.insert(new Point2D(0.75, 0.5));
         assertEquals(4, tree.size());
         assertTrue(tree.contains(new Point2D(0.75, 0.5)));
+    }
+
+    @Test
+    public void problemSetTest() {
+        KdTree tree = new KdTree();
+        String input = "(0.49, 0.77)|" +
+            "(0.52, 0.46)|" +
+            "(0.59, 0.75)|" +
+            "(0.04, 0.96)|" +
+            "(0.48, 0.73)|" +
+            "(0.70, 0.44)|" +
+            "(0.87, 0.83)|" +
+            "(0.83, 0.39)";
+
+        for (String pair : input.split("\\|")) {
+            String[] tokens = pair.split(",");
+            double x = Double.valueOf(tokens[0].substring(1, tokens[0].length()).trim());
+            double y = Double.valueOf(tokens[1].substring(0, tokens[1].length() -1).trim());
+            tree.insert(new Point2D(x, y));
+        }
+
+
     }
 }
